@@ -63,7 +63,8 @@ public class Contraints {
 				if(j == this.cont.get(i).getY().size()-1 &&  i != this.cont.size()-1) {
 					b.add(Double.parseDouble(this.cont.get(i).getY().get(j).getText()));
 					
-				}else if(j != this.cont.get(i).getY().size()-1 &&  i != this.cont.size()-1)  {
+				}
+				else if(j < this.cont.get(i).getY().size() &&  i < this.cont.size())  {
 					ligne.add(Double.parseDouble(this.cont.get(i).getY().get(j).getText()));
 				}
 			}

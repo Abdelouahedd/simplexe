@@ -13,33 +13,42 @@ public class Simplexe {
 	}
 	
 	public ArrayList<ArrayList<Double>>ajouterVarEcarArti(){
-		
-
 		ArrayList<ArrayList<Double>>values = this.cntrs.getAllV();
 		
-//		ArrayList<Double>ligne = new ArrayList<Double>();
-//				
-//		for(int i= 0;i<this.getNbrLIgne();i++) {
-//			if(this.getNbrLIgne()-1!=i) {
-//				if(this.cntrs.getCot().get(i).getOp().equals("<=")) {
-//					for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
-//	                  if(j == this.getNbrColonne()+1+i) {
-//	                      ligne.add(new Double(1));
-//	                  }else {
-//	                      ligne.add(new Double(0));
-//	                  }
-//	                }
-//				}
-//			}else{
-//				
-//				for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
-//					ligne.add(new Double(0));
-//					}
-//			}
-//			
-//			values.add(ligne);
-//		}
-//		this.system= values;
+		for(int i= 0;i<this.getNbrLIgne();i++) {
+			if(this.getNbrLIgne()-1!=i) {
+				if(this.cntrs.getCot().get(i).getOp().equals("<=")) {
+					for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
+	                  if(j == this.getNbrColonne()+1+i) {
+	                      values.get(i).add(new Double(1));
+	                  }else {
+	                      values.get(i).add(new Double(0));
+	                  }
+	                }
+				}else if(this.cntrs.getCot().get(i).getOp().equals(">=")) {
+					for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
+						  if(j == this.getNbrColonne()+1+i) {
+		                      values.get(i).add(new Double(-1));
+		                  }else if(j == this.getNbrColonne()+this.getNbrLIgne()+i) {
+		                	  int v = this.getNbrColonne()+this.getNbrLIgne()+i;
+		                	  System.out.println("position art "+v);
+		                	  values.get(i).add(new Double(1));
+		                  }else {
+		                      values.get(i).add(new Double(0));
+		                  }
+		                }
+				}else if(this.cntrs.getCot().get(i).getOp().equals("=")) {
+					for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
+						 
+		                }
+				}
+			}
+			else{
+				for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++)
+						values.get(i).add(new Double(0));
+			}			
+		}
+		this.system= values;
 		System.out.println("affichage des coef du system");
 		this.cntrs.displayValc();
 		System.out.println("------------------------");
@@ -50,10 +59,10 @@ public class Simplexe {
 			System.out.println();
 		}
 		System.out.println("------------------------");
-		for(int i =0;i<this.cntrs.b.size();i++) {
-				System.out.println(String.format("%.0f",this.cntrs.b.get(i)));
-			
-		}
+//		for(int i =0;i<this.cntrs.b.size();i++) {
+//				System.out.println(String.format("%.0f",this.cntrs.b.get(i)));
+//			
+//		}
 		
 		return this.system;
 	}
