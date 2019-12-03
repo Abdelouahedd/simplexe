@@ -42,7 +42,7 @@ public class HelloWorld extends Application {
     	dis.setOnAction(e->{
     		Simplexe sx = new Simplexe(co);
     		sx.ajouterVarEcarArti();
-    		co.displayValc();
+    		sx.displaySystem();
     	});
         Scene sc = new Scene(root, 500, 500);
         primaryStage.setTitle("Simplexe Methode");

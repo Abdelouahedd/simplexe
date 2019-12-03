@@ -13,35 +13,73 @@ public class Simplexe {
 	}
 	
 	public ArrayList<ArrayList<Double>>ajouterVarEcarArti(){
+		
+
 		ArrayList<ArrayList<Double>>values = this.cntrs.getAllV();
-		System.out.println("le nombre du col "+this.getMaxCol());
+		
+//		ArrayList<Double>ligne = new ArrayList<Double>();
+//				
 //		for(int i= 0;i<this.getNbrLIgne();i++) {
-//			for (int j = this.getNbrColonne(); j <getMaxCol(); j++) {
-//
+//			if(this.getNbrLIgne()-1!=i) {
+//				if(this.cntrs.getCot().get(i).getOp().equals("<=")) {
+//					for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
+//	                  if(j == this.getNbrColonne()+1+i) {
+//	                      ligne.add(new Double(1));
+//	                  }else {
+//	                      ligne.add(new Double(0));
+//	                  }
+//	                }
+//				}
+//			}else{
+//				
+//				for (int j = this.getNbrColonne()+1; j <=getMaxCol(); j++) {
+//					ligne.add(new Double(0));
+//					}
 //			}
-//
+//			
+//			values.add(ligne);
 //		}
+//		this.system= values;
+		System.out.println("affichage des coef du system");
+		this.cntrs.displayValc();
+		System.out.println("------------------------");
+		for(int i =0;i<values.size();i++) {
+			for(int j = 0;j<values.get(i).size();j++) {
+				System.out.print(String.format("%.0f",values.get(i).get(j)));
+			}
+			System.out.println();
+		}
+		System.out.println("------------------------");
+		for(int i =0;i<this.cntrs.b.size();i++) {
+				System.out.println(String.format("%.0f",this.cntrs.b.get(i)));
+			
+		}
+		
 		return this.system;
 	}
+	
+	
+	
 	//le nombre du ligne du system
 	private int getNbrLIgne() {
 		return this.cntrs.getCot().size();
 	}
+	
 	//le nombre du colonne du system
 	private int getNbrColonne() {
-		return this.cntrs.getCot().get(1).getNbrV()+1;
+		return this.cntrs.getCot().get(1).getNbrV();
 	}	
+	
 	//le nombre du colonne apres l'ajout des variables d'ecarts ou artificiels
 	private int getMaxCol() {
 		int nbrCol = this.getNbrColonne();
 		for (int i = 0; i < this.cntrs.getCot().size()-1; i++) {
-			System.out.println("operation equation 1"+this.cntrs.getCot().get(i).getOp());
 			if(this.cntrs.getCot().get(i).getOp().equals("<=")) {
-				nbrCol++;
+				nbrCol+=1;
 			}else if(this.cntrs.getCot().get(i).getOp().equals(">=")) {
 				nbrCol+=2;
 			}else {
-				nbrCol++;
+				nbrCol+=1;
 			}
 		}
 		return nbrCol;
@@ -63,8 +101,15 @@ public class Simplexe {
 	public void setSystem(ArrayList<ArrayList<Double>> system) {
 		this.system = system;
 	}
+	
+	public void displaySystem() {
+		for(int i =0;i<this.system.size();i++) {
+			for(int j = 0;j<this.system.get(i).size();j++) {
+				System.out.print(String.format("%.0f",this.system.get(i).get(j)));
+			}
+			System.out.println();
+		}
+	}
 
 	
-	
-
 }

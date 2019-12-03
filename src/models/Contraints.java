@@ -11,11 +11,14 @@ public class Contraints {
 	private ArrayList<Contrainte>cont;
 	//les coefficient du system
 	private ArrayList<ArrayList<Double>>coeffcient;
+	public ArrayList<Double>b;
 
 	public Contraints(){
 		this.cont = new ArrayList<Contrainte>();
 		this.coeffcient = new ArrayList<ArrayList<Double>>();
+		this.b = new ArrayList<Double>();
 	}
+	
 	
 	
 	public ArrayList<Contrainte>getCot(){
@@ -51,12 +54,17 @@ public class Contraints {
 	public ArrayList<ArrayList<Double>> getAllV(){
 		int i,j;
 		ArrayList<ArrayList<Double>> values = new ArrayList<ArrayList<Double>>();
-		for( i=0;i<this.cont.size();i++) {
+		for(i=0;i<this.cont.size();i++) {
 			ArrayList<Double>ligne = new ArrayList<Double>();
 			for( j=0;j<this.cont.get(i).getY().size();j++) {
-				ligne.add(Double.parseDouble(this.cont.get(i).getY().get(j).getText()));
 				if(j == this.cont.get(i).getY().size()-1 && i==this.cont.size()-1 ) {
-					ligne.add(new Double(0));
+					b.add(new Double(0));
+				}
+				if(j == this.cont.get(i).getY().size()-1 &&  i != this.cont.size()-1) {
+					b.add(Double.parseDouble(this.cont.get(i).getY().get(j).getText()));
+					
+				}else if(j != this.cont.get(i).getY().size()-1 &&  i != this.cont.size()-1)  {
+					ligne.add(Double.parseDouble(this.cont.get(i).getY().get(j).getText()));
 				}
 			}
 			values.add(i, ligne);
