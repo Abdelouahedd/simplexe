@@ -23,6 +23,7 @@ public class HelloWorld extends Application {
 		TextField tnbrC = new TextField();
 		Button next = new Button("next");
 		Button dis = new Button("display");
+		Button go = new Button("go");
 		root.add(nbrV, 0, 1);
 		root.add(tnbrV, 1, 1);
 		root.add(nbrC, 0, 2);
@@ -36,14 +37,16 @@ public class HelloWorld extends Application {
 		next.setOnAction(e -> {
 			root.add(co.generateConts(Integer.parseInt(tnbrV.getText()), Integer.parseInt(tnbrC.getText())), 1, 3);
 		});
-
+		Simplexe sx = new Simplexe(co);
 		dis.setOnAction(e -> {
-			Simplexe sx = new Simplexe(co);
 			sx.ajouterVarEcarArti();
 			sx.displaySystem();	
 			sx.createTableView().prefWidthProperty().bind(primaryStage.widthProperty());
 			root.add(sx.createTableView(),1,4);
+			root.add(go, 2, 4);
 		});
+		
+
 		Scene sc = new Scene(root, 500, 500);
 		primaryStage.setTitle("Simplexe Methode");
 		primaryStage.setScene(sc);
