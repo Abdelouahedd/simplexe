@@ -1,7 +1,6 @@
 package models;
 
 import java.util.ArrayList;
-
 import elements.Contrainte;
 import javafx.geometry.Pos;
 import javafx.scene.layout.*;
@@ -39,9 +38,15 @@ public class Contraints {
 		VBox vb = new VBox();
 		vb.setAlignment(Pos.BOTTOM_CENTER);
 		for (int i = 0; i < nbrC; i++) {
-			Contrainte co = new Contrainte(nbrV);
-			this.cont.add(co);
-			vb.getChildren().add(co.generateCont(nbrV));
+			try {
+				Thread.sleep(500);
+				Contrainte co = new Contrainte(nbrV);
+				this.cont.add(co);
+				vb.getChildren().add(co.generateCont(nbrV));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		vb.setSpacing(20);
 		Contrainte z = new Contrainte(nbrV);
@@ -83,6 +88,5 @@ public class Contraints {
 			 System.out.println();
 		}
 	}
-	
 	
 }

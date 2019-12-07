@@ -1,9 +1,6 @@
 package classes;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -16,11 +13,14 @@ import models.Contraints;
 
 public class Simplexe {
 	private Contraints cntrs;
+	private ArrayList<Double>z = new ArrayList<Double>();
 	private ArrayList<ArrayList<Double>> system = new ArrayList<ArrayList<Double>>();
 
 	public Simplexe(Contraints cntrs) {
 		this.cntrs = cntrs;
 	}
+	
+	public Simplexe() {}
 
 	// la creation d'une matrice qui contient des valeurs d'ecarts et variable
 	// artificiels
@@ -141,7 +141,7 @@ public class Simplexe {
 	}
 
 	// le nombre du colonne apres l'ajout des variables d'ecarts ou artificiels
-	private int getMaxCol() {
+	public int getMaxCol() {
 		return this.getNbrColonne() + this.getNbrVarEc() + this.getNbrVarAr();
 	}
 
@@ -151,7 +151,7 @@ public class Simplexe {
 	}
 
 	// le nombre de variable d'ecart
-	private int getNbrVarEc() {
+	public int getNbrVarEc() {
 		int nbrCol = 0;
 		for (int i = 0; i < this.cntrs.getCot().size() - 1; i++) {
 			if (this.cntrs.getCot().get(i).getOp().equals("<=") || this.cntrs.getCot().get(i).getOp().equals(">=")) {
@@ -162,7 +162,7 @@ public class Simplexe {
 	}
 
 	// le nombre des variables artifieciels dans le system
-	private int getNbrVarAr() {
+	public int getNbrVarAr() {
 		int nbrCol = 0;
 		for (int i = 0; i < this.cntrs.getCot().size() - 1; i++) {
 			if (this.cntrs.getCot().get(i).getOp().equals(">=") || this.cntrs.getCot().get(i).getOp().equals("=")) {
@@ -223,11 +223,12 @@ public class Simplexe {
 					});
 			tableView.getColumns().add(column);
 		}
+		
 		tableView.setPrefHeight(getNbrLIgne() * 35);
 		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		return tableView;
 	}
-
+	//-********************************
 	private ArrayList<String> generateNameColumn() {
 		ArrayList<String> varEc = new ArrayList<String>();
 		ArrayList<String> varAr = new ArrayList<String>();
@@ -248,7 +249,6 @@ public class Simplexe {
 				varAr.add("a" + c);
 			}
 		}
-		
 		column.addAll(varDec);
 		column.addAll(varEc);
 		column.addAll(varAr);
@@ -260,5 +260,91 @@ public class Simplexe {
 	        if (col.getText().equals(name)) return col ;
 	    return null ;
 	}
+	
+
+	
+	/*               *
+	 *               * 
+	 *               *
+	 *    Phase 1    * 
+	 *               *
+	 *               *
+	 *               *
+	 *               */
+	
+	//la variable entrante dans le system
+		public int findColonePivot() {
+			int size = this.system.size()-1;
+			Double max = new Double(0);
+			int index = 0;
+			for(int i = 0;i<this.system.get(size).size();i++) {
+			  	if(Math.abs(this.system.get(size).get(i)) > max && this.system.get(size).get(i) < 0 ) {
+			  		max = this.system.get(size).get(i);
+			  		index  = i;
+			  	}
+			} 
+			return index;
+		}
+		//la variable sortante de la base
+		public int findLignePivot() {
+			int colonpivot = findColonePivot();
+			int nbrColone = this.system.get(0).size();
+			int index = 0;
+			Double min = Double.MAX_VALUE;
+			ArrayList<Double>racio = new ArrayList<Double>();
+	         for(int i=0;i<this.system.size()-1;i++) {
+					racio.add(this.system.get(i).get(nbrColone-1)/this.system.get(i).get(colonpivot));
+	         }
+	         for(int j = 0;j<this.system.size()-1;j++) {
+	        	 if(racio.get(j)<min && racio.get(j)>0) {
+	        		 min = racio.get(j);
+	        		 index = j;
+	        	 }
+	         }
+			return index;
+		}
+		//pivot
+		public Double getPivot() {
+			return this.system.get(findLignePivot()).get(findColonePivot());
+		}
+		//correction de la fonction objectif
+		public void correctionZ() {
+			int eviter = getNbrVarEc()+this.getCntrs().getCot().get(0).getNbrV();
+			//nouvel fonction objectif 
+			ArrayList<Double>cj = new ArrayList<Double>();
+			//les index des fonctions qui contients des variables artificiel
+			ArrayList<Integer> indexs= new ArrayList<Integer>();
+			//Tout les variables Hors base sont a 0 sauf les variables artifiecl
+			for(int i=0;i<this.system.get(0).size();i++) {
+				if(i==eviter)
+					cj.add(new Double(1));
+				else
+					cj.add(new Double(0));
+			}
+			//Trouver les contraints qui contients les variables artificiel
+			for(int i = 0;i<this.getCntrs().getCot().size()-1;i++) {
+				if(this.getCntrs().getCot().get(i).getOp().equals(">=") || this.getCntrs().getCot().get(i).getOp().equals(">=")) {
+					indexs.add(i);
+				}
+			}
+			//Correction de CJ
+			for(int i=0;i<indexs.size();i++) {
+				for (int j = 0; j < this.system.get(indexs.get(i)).size()-1; j++) {
+					cj.set(j, cj.get(j)-this.system.get(indexs.get(i)).get(j));
+				}
+			}
+			for (int j = 0; j < cj.size(); j++) {
+				System.out.println("--> "+cj.get(j));
+			}
+			//supprimer la fonction Z et remplacer le avec Cj
+			this.system.remove(this.system.size()-1);
+			this.system.add(cj);
+		}
+		
+		//pahase 1
+				public ArrayList<ArrayList<Double>>phase1(){
+					
+					return this.system;
+				}
 
 }
