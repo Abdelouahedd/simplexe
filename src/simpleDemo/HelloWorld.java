@@ -2,6 +2,9 @@ package simpleDemo;
 
 import classes.Simplexe;
 import classes.Solver;
+import exceptions.Degenerescence;
+import exceptions.NonBornerException;
+import exceptions.PivotException;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.*;
@@ -27,7 +30,9 @@ public class HelloWorld extends Application {
 		Button next = new Button("next");
 		Button dis = new Button("display");
 		Button go = new Button("go");
-		
+		Button con = new Button("co");
+		Button last = new Button("last");
+
 		root.add(nbrV, 0, 1);
 		root.add(tnbrV, 1, 1);
 		root.add(nbrC, 0, 2);
@@ -41,6 +46,7 @@ public class HelloWorld extends Application {
 				root.add(co.generateConts(Integer.parseInt(tnbrV.getText()), 
 						 Integer.parseInt(tnbrC.getText())), 
 						1,3);
+				next.setVisible(false);
 		});
 		
 		Simplexe sx = new Simplexe(co);
@@ -53,13 +59,34 @@ public class HelloWorld extends Application {
 		});
 		
 		go.setOnAction(e->{
-//			Solver sl = new Solver(sx.getSystem());
-//			sl.findLignePivot();
 			sx.correctionZ();
-			sx.findLignePivot();
-			sx.createTableView().prefWidthProperty().bind(primaryStage.widthProperty());
-			root.add(sx.createTableView(),1,5);
-			System.out.println("Pivot est : "+sx.getPivot());
+            root.add(sx.createTableView(),1,5);
+			root.add(con, 2, 5);
+		});
+		con.setOnAction(e->{
+				try {
+					sx.phase1();
+				} catch (PivotException | NonBornerException | Degenerescence e1) {
+					// TODO Auto-generated catch block
+					System.out.println(e1);;
+				}				
+			    root.add(sx.createTableView(),1,6);
+			    root.add(last, 2, 6);
+			    
+		});
+		
+
+		last.setOnAction(e->{
+			int j = 7;
+			try {
+				sx.phase1();
+			} catch (PivotException | NonBornerException | Degenerescence e1) {
+				System.out.println(e1);
+			}
+			root.add(sx.createTableView(),1,j);
+			root.add(sx.createTableView(),2,j);
+			j++;
+
 		});
 		
 

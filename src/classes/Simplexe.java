@@ -1,6 +1,11 @@
 package classes;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.Map.Entry;
+
+import exceptions.Degenerescence;
+import exceptions.NonBornerException;
+import exceptions.PivotException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -12,13 +17,15 @@ import javafx.util.Callback;
 import models.Contraints;
 
 public class Simplexe {
+	
 	private Contraints cntrs;
-	private ArrayList<Double>z = new ArrayList<Double>();
+	//public  ArrayList<Double>z = new ArrayList<Double>();
 	private ArrayList<ArrayList<Double>> system = new ArrayList<ArrayList<Double>>();
-
+    private Map<Integer,String>varBase = new HashMap<Integer,String>();
 	public Simplexe(Contraints cntrs) {
 		this.cntrs = cntrs;
 	}
+	
 	
 	public Simplexe() {}
 
@@ -29,9 +36,13 @@ public class Simplexe {
 
 		for (int i = 0; i < this.getNbrLIgne(); i++) {
 			ArrayList<Double> ligne = new ArrayList<Double>();
+			int nbr = i+1;
 			if (this.getNbrLIgne() - 1 != i) {
 				// Si la contrainte contient <=
 				if (this.cntrs.getCot().get(i).getOp().equals("<=")) {
+					/***********/
+					this.varBase.put(i, "e"+nbr);
+					/*************/
 					for (int j = 0; j < this.getMaxColVar(); j++) {
 						int posi = 0;
 						for (int k = 0; k < i; k++) {
@@ -52,6 +63,9 @@ public class Simplexe {
 
 				// si la contrainte contient >=
 				if (this.cntrs.getCot().get(i).getOp().equals(">=")) {
+					/**********/
+					this.varBase.put(i, "a"+nbr);
+                    /**********/
 					for (int j = 0; j < this.getMaxColVar(); j++) {
 						int posi = 0;
 						int posE = 0;
@@ -78,6 +92,9 @@ public class Simplexe {
 
 				// si la contrainte contient =
 				if (this.cntrs.getCot().get(i).getOp().equals("=")) {
+					/********************/
+					this.varBase.put(i, "a"+nbr);
+					/***************/
 					for (int j = 0; j < this.getMaxColVar(); j++) {
 						int posi = 0;
 						for (int k = 0; k < i; k++) {
@@ -124,6 +141,7 @@ public class Simplexe {
 		for (int i = 0; i < getNbrLIgne(); i++) {
 			this.system.get(i).add(this.cntrs.b.get(i));
 		}
+		
 
 		return this.system;
 	}
@@ -191,7 +209,7 @@ public class Simplexe {
 	public void displaySystem() {
 		for (int i = 0; i < this.system.size(); i++) {
 			for (int j = 0; j < this.system.get(i).size(); j++) {
-				System.out.print(String.format("%.0f", this.system.get(i).get(j)));
+				System.out.print(String.format("| %.2f |", this.system.get(i).get(j)));
 			}
 			System.out.println();
 		}
@@ -218,7 +236,7 @@ public class Simplexe {
 					new Callback<TableColumn.CellDataFeatures<ObservableList<Double>, String>, ObservableValue<String>>() {
 						@Override
 						public ObservableValue<String> call(CellDataFeatures<ObservableList<Double>, String> p) {
-							return new SimpleStringProperty((p.getValue().get(curCol).toString()));
+							return new SimpleStringProperty(p.getValue().get(curCol).toString());
 						}
 					});
 			tableView.getColumns().add(column);
@@ -243,12 +261,14 @@ public class Simplexe {
 			if (this.cntrs.getCot().get(i).getOp().equals("<=")) {
 				varEc.add("e" + c);
 			} else if (this.cntrs.getCot().get(i).getOp().equals(">=")) {
+
 				varEc.add("e" + c);
 				varAr.add("a" + c);
 			} else if (this.cntrs.getCot().get(i).getOp().equals("=")) {
 				varAr.add("a" + c);
 			}
 		}
+		
 		column.addAll(varDec);
 		column.addAll(varEc);
 		column.addAll(varAr);
@@ -261,7 +281,9 @@ public class Simplexe {
 	    return null ;
 	}
 	
-
+   public String getNameVarEntrant(int i) {
+	   return createTableView().getColumns().get(i).getText();
+   }
 	
 	/*               *
 	 *               * 
@@ -273,20 +295,23 @@ public class Simplexe {
 	 *               */
 	
 	//la variable entrante dans le system
-		public int findColonePivot() {
+		public int findColonePivot() throws PivotException {
 			int size = this.system.size()-1;
-			Double max = new Double(0);
+			Double max = Double.MAX_VALUE;
 			int index = 0;
-			for(int i = 0;i<this.system.get(size).size();i++) {
-			  	if(Math.abs(this.system.get(size).get(i)) > max && this.system.get(size).get(i) < 0 ) {
+			for(int i = 0;i<this.system.get(size).size()-1;i++) {
+			  	if(this.system.get(size).get(i) < max && this.system.get(size).get(i) < 0 ) {
 			  		max = this.system.get(size).get(i);
 			  		index  = i;
 			  	}
-			} 
+			}
+			if(max>=0) throw new PivotException();
 			return index;
 		}
+		
+
 		//la variable sortante de la base
-		public int findLignePivot() {
+		public int findLignePivot() throws PivotException, NonBornerException, Degenerescence  {
 			int colonpivot = findColonePivot();
 			int nbrColone = this.system.get(0).size();
 			int index = 0;
@@ -301,10 +326,13 @@ public class Simplexe {
 	        		 index = j;
 	        	 }
 	         }
+	         if(min<=0) throw new NonBornerException();
+	         if(min==0) throw new Degenerescence();
+	         
 			return index;
 		}
 		//pivot
-		public Double getPivot() {
+		public Double getPivot() throws PivotException, NonBornerException, Degenerescence {
 			return this.system.get(findLignePivot()).get(findColonePivot());
 		}
 		//correction de la fonction objectif
@@ -316,14 +344,17 @@ public class Simplexe {
 			ArrayList<Integer> indexs= new ArrayList<Integer>();
 			//Tout les variables Hors base sont a 0 sauf les variables artifiecl
 			for(int i=0;i<this.system.get(0).size();i++) {
-				if(i==eviter)
+				if(i>=eviter)
 					cj.add(new Double(1));
 				else
 					cj.add(new Double(0));
 			}
+			//colonne du B = 0
+			cj.set(cj.size()-1, (double)0);
+			
 			//Trouver les contraints qui contients les variables artificiel
 			for(int i = 0;i<this.getCntrs().getCot().size()-1;i++) {
-				if(this.getCntrs().getCot().get(i).getOp().equals(">=") || this.getCntrs().getCot().get(i).getOp().equals(">=")) {
+				if(this.getCntrs().getCot().get(i).getOp().equals(">=") || this.getCntrs().getCot().get(i).getOp().equals("=")) {
 					indexs.add(i);
 				}
 			}
@@ -333,18 +364,84 @@ public class Simplexe {
 					cj.set(j, cj.get(j)-this.system.get(indexs.get(i)).get(j));
 				}
 			}
-			for (int j = 0; j < cj.size(); j++) {
-				System.out.println("--> "+cj.get(j));
-			}
+			
 			//supprimer la fonction Z et remplacer le avec Cj
 			this.system.remove(this.system.size()-1);
 			this.system.add(cj);
 		}
 		
 		//pahase 1
-				public ArrayList<ArrayList<Double>>phase1(){
+	public ArrayList<ArrayList<Double>>phase1() throws PivotException, NonBornerException, Degenerescence{
+		
+		            int indexi = findLignePivot();
+					int indexj = findColonePivot();
 					
+					//System.out.println("nom du var entrant =>"+getNameVarEntrant(indexj));
+					Double pivot = getPivot();
+					
+					ArrayList<Double>lignePivot = new ArrayList<Double>();
+					ArrayList<Double>colomnPivot = new ArrayList<Double>();
+					
+					//division tout les nombres dans la ligne du pivot par le pivot
+					for(int i=0;i<this.system.get(indexi).size();i++) {
+						this.system.get(indexi).set(i,(double)(this.system.get(indexi).get(i)/pivot));
+					}
+					
+					//get nouveaux ligne pivot et le colonne de pivot pour la multipilier au nouveau ligne
+					for (int i = 0; i < this.system.size(); i++) {
+						colomnPivot.add(this.system.get(i).get(indexj));
+					}
+					lignePivot.addAll(this.system.get(indexi));
+					
+					//les nouveaux lignes
+					for(int j =0;j< this.system.size();j++) {
+							 for(int k=0;k<this.system.get(j).size();k++) {
+								 if(j!= indexi) {
+									 this.system.get(j).set(k,(double) (this.system.get(j).get(k)-(lignePivot.get(k)*colomnPivot.get(j))));  
+									 }else {
+										 j++;
+										 }
+								 }	    
+					}
+					
+					showValues(indexi,indexj);
 					return this.system;
-				}
+	}
+	
+	public Map<Integer, String> showValues(int i,int j) throws PivotException, NonBornerException, Degenerescence {
+		System.out.println(this.varBase.toString());
+		String NomVarEntrant = getNameVarEntrant(j);
+		System.out.println("show values of base");
+		//this.varBase.put(i, NomVarEntrant);
+	        Iterator<Entry<Integer,String>> iterator = this.varBase.entrySet().iterator();
+	        while (iterator.hasNext()) {
+	        	Entry<Integer,String> entry = iterator.next();
+	            if(entry.getKey()==(i)) {
+	            	this.varBase.replace(i, NomVarEntrant);
+	            }
+	        }
+	        Iterator<Entry<Integer,String>> it = this.varBase.entrySet().iterator();
+	        while (it.hasNext()) {
+	        	Entry<Integer,String> entry = it.next();
+	            System.out.println("variable: "+entry.getValue()+" , value = "+this.system.get(entry.getKey()).get(this.system.get(0).size()-1));
+	        }
+	        System.out.println("Cout du Z ==>"+coutZ());
 
+	return this.varBase;
+	}
+	
+	public Double coutZ() {
+		Double cout = (double)0;
+		 Iterator<Entry<Integer,String>> iterator = this.varBase.entrySet().iterator();
+	        while (iterator.hasNext()) {
+	        	Entry<Integer,String> entry = iterator.next();
+	            if(entry.getValue().startsWith("a")) {
+	            	cout += this.system.get(entry.getKey()).get(this.system.get(0).size()-1);
+	            }
+	        }
+	        this.system.get(this.system.size()-1).set(getMaxCol(), cout);
+		return cout;
+	}
+    
+	
 }
