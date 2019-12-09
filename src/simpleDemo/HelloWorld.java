@@ -21,12 +21,8 @@ public class HelloWorld extends Application {
 		ScrollPane sp = new ScrollPane();
 		Scene sc = new Scene(sp, 500, 500);
 		GridPane root = new GridPane();
-		root.setStyle("-fx-padding: 10;" +
-				"-fx-border-style: solid inside;" +
-				"-fx-border-width: 2;" +
-				"-fx-border-insets: 5;" +
-				"-fx-border-radius: 5;" +
-				"-fx-border-color: blue;");
+		root.setStyle("-fx-padding: 10;" + "-fx-border-style: solid inside;" + "-fx-border-width: 2;"
+				+ "-fx-border-insets: 5;" + "-fx-border-radius: 5;" + "-fx-border-color: blue;");
 		sp.setContent(root);
 		root.setVgap(10);
 		root.setHgap(10);
@@ -49,59 +45,51 @@ public class HelloWorld extends Application {
 		hb.getChildren().addAll(next, dis);
 		root.add(hb, 2, 2);
 		Contraints co = new Contraints();
-	
+
 		next.setOnAction(e -> {
-				root.add(co.generateConts(Integer.parseInt(tnbrV.getText()), 
-						 Integer.parseInt(tnbrC.getText())), 
-						1,3);
-				next.setVisible(false);
+			root.add(co.generateConts(Integer.parseInt(tnbrV.getText()), Integer.parseInt(tnbrC.getText())), 1, 3);
+			next.setVisible(false);
 		});
-		
+
 		Simplexe sx = new Simplexe(co);
 		dis.setOnAction(e -> {
 			root.add(sx.realiserTable1(), 1, 4);
 			root.add(go, 2, 4);
 		});
-		
+
 		HBox phase = new HBox();
-		go.setOnAction(e->{
-				try {
-					do {
-						sx.iterationPhase1();
-						Thread.sleep(20);
-					}while(true);	
-				} catch (PivotException | NonBornerException | Degenerescence | InterruptedException e1) {
-					e1.getMessage();
-					System.out.println(e1);
-				}
-				phase.getChildren().addAll(sx.createTableView(),phase2);
-				if(sx.coutZ()==(0)) {
-					System.out.println("phase 2 -->");
-				}else {
-					System.out.println("Le probleme n'admit pas de solutions");
-				}
-				go.setVisible(false);
-				root.add(phase, 1, 6);
+		go.setOnAction(e -> {
+			try {
+				do {
+					sx.iterationPhase1();
+					Thread.sleep(20);
+				} while (true);
+			} catch (PivotException | NonBornerException | Degenerescence | InterruptedException e1) {
+				e1.getMessage();
+				System.out.println(e1);
+			}
+			phase.getChildren().addAll(sx.createTableView(), phase2);
+			if (sx.coutZ() == (0)) {
+				System.out.println("phase 2 -->");
+			} else {
+				System.out.println("Le probleme n'admit pas de solutions");
+			}
+			go.setVisible(false);
+			root.add(phase, 1, 6);
 		});
-		phase2.setOnAction(e->{
+		phase2.setOnAction(e -> {
 			sx.removeVarAr();
 			sx.corectionZ2();
-			sx.displaySystem();
 			try {
 				do {
 					sx.iterationPhase2();
 					Thread.sleep(20);
-				}while(true);	
-			} catch (PivotException   e1) {
+				}while(true);
+			} catch (PivotException | NonBornerException | Degenerescence | InterruptedException e1) {
+				e1.getMessage();
 				System.out.println(e1);
-			}catch( NonBornerException e1) {
-				System.out.println(e1);
-			}catch( Degenerescence e1) {
-				System.out.println(e1);
-			}catch( InterruptedException e2) {
-				System.out.println(e2);
 			}
-			root.add(sx.createTablePhase2(), 1,7);
+			root.add(sx.createTablePhase2(), 1, 7);
 		});
 
 		primaryStage.setTitle("Simplexe Methode");
