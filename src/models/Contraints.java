@@ -11,11 +11,12 @@ public class Contraints {
 	//les coefficient du system
 	private ArrayList<ArrayList<Double>>coeffcient;
 	public ArrayList<Double>b;
-
+	public ArrayList<Double>z;
 	public Contraints(){
 		this.cont = new ArrayList<Contrainte>();
 		this.coeffcient = new ArrayList<ArrayList<Double>>();
 		this.b = new ArrayList<Double>();
+		this.z = new ArrayList<Double>();
 	}
 	
 	
@@ -74,6 +75,9 @@ public class Contraints {
 				}
 			}
 			values.add(i, ligne);
+			if(i == this.cont.size()-1) {
+				z.addAll(ligne);
+			}
 		}
 		this.coeffcient.addAll(values);
 		return this.coeffcient;
@@ -88,5 +92,6 @@ public class Contraints {
 			 System.out.println();
 		}
 	}
+	
 	
 }

@@ -40,7 +40,6 @@ public class HelloWorld extends Application {
 		Button dis = new Button("display");
 		Button go = new Button("next");
 		Button phase2 = new Button("Phase 2");
-        Popup pop = new Popup();
 		root.add(nbrV, 0, 1);
 		root.add(tnbrV, 1, 1);
 		root.add(nbrC, 0, 2);
@@ -86,6 +85,22 @@ public class HelloWorld extends Application {
 		});
 		phase2.setOnAction(e->{
 			sx.removeVarAr();
+			sx.corectionZ2();
+			sx.displaySystem();
+			try {
+				do {
+					sx.iterationPhase2();
+					Thread.sleep(20);
+				}while(true);	
+			} catch (PivotException   e1) {
+				System.out.println(e1);
+			}catch( NonBornerException e1) {
+				System.out.println(e1);
+			}catch( Degenerescence e1) {
+				System.out.println(e1);
+			}catch( InterruptedException e2) {
+				System.out.println(e2);
+			}
 			root.add(sx.createTablePhase2(), 1,7);
 		});
 
