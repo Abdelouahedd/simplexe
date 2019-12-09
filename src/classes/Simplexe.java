@@ -2,7 +2,6 @@ package classes;
 
 import java.util.*;
 import java.util.Map.Entry;
-
 import exceptions.Degenerescence;
 import exceptions.NonBornerException;
 import exceptions.PivotException;
@@ -10,9 +9,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import models.Contraints;
 
@@ -275,11 +276,7 @@ public class Simplexe {
 		column.add("b");
 		return column;
 	}
-	public <T> TableColumn<T, ?> getTableColumnByName(TableView<T> tableView, String name) {
-	    for (TableColumn<T, ?> col : tableView.getColumns())
-	        if (col.getText().equals(name)) return col ;
-	    return null ;
-	}
+	
 	
    public String getNameVarEntrant(int i) {
 	   return createTableView().getColumns().get(i).getText();
@@ -350,7 +347,7 @@ public class Simplexe {
 					cj.add(new Double(0));
 			}
 			//colonne du B = 0
-			cj.set(cj.size()-1, (double)0);
+			cj.set(cj.size()-1, coutZ());
 			
 			//Trouver les contraints qui contients les variables artificiel
 			for(int i = 0;i<this.getCntrs().getCot().size()-1;i++) {
@@ -370,49 +367,47 @@ public class Simplexe {
 			this.system.add(cj);
 		}
 		
-		//pahase 1
-	public ArrayList<ArrayList<Double>>phase1() throws PivotException, NonBornerException, Degenerescence{
+		//Fonction pour faire une itération
+	public ArrayList<ArrayList<Double>>iterationPhase1() throws PivotException, NonBornerException, Degenerescence{
+			displaySystem();
+			coutZ();
+		            	 int indexi = findLignePivot();
+							int indexj = findColonePivot();
+							showValues(indexi,indexj);
+							Double pivot = getPivot();
+					
+							ArrayList<Double>lignePivot = new ArrayList<Double>();
+							ArrayList<Double>colomnPivot = new ArrayList<Double>();
+							
+							//division tout les nombres dans la ligne du pivot par le pivot
+							for(int i=0;i<this.system.get(indexi).size();i++) {
+								this.system.get(indexi).set(i,(double)(this.system.get(indexi).get(i)/pivot));
+							}
+							
+							//get nouveaux ligne pivot et le colonne de pivot pour la multipilier au nouveau ligne
+							for (int i = 0; i < this.system.size(); i++) {
+								colomnPivot.add(this.system.get(i).get(indexj));
+							}
+							lignePivot.addAll(this.system.get(indexi));
+							
+							//les nouveaux lignes
+							for(int j =0;j< this.system.size();j++) {
+									 for(int k=0;k<this.system.get(j).size();k++) {
+										 if(j!= indexi) {
+											 this.system.get(j).set(k,(double) (this.system.get(j).get(k)-(lignePivot.get(k)*colomnPivot.get(j))));  
+											 }else {
+												 j++;
+												 }
+										 }	    
+							}
+							coutZ();
+							displaySystem();
 		
-		            int indexi = findLignePivot();
-					int indexj = findColonePivot();
-					
-					//System.out.println("nom du var entrant =>"+getNameVarEntrant(indexj));
-					Double pivot = getPivot();
-					
-					ArrayList<Double>lignePivot = new ArrayList<Double>();
-					ArrayList<Double>colomnPivot = new ArrayList<Double>();
-					
-					//division tout les nombres dans la ligne du pivot par le pivot
-					for(int i=0;i<this.system.get(indexi).size();i++) {
-						this.system.get(indexi).set(i,(double)(this.system.get(indexi).get(i)/pivot));
-					}
-					
-					//get nouveaux ligne pivot et le colonne de pivot pour la multipilier au nouveau ligne
-					for (int i = 0; i < this.system.size(); i++) {
-						colomnPivot.add(this.system.get(i).get(indexj));
-					}
-					lignePivot.addAll(this.system.get(indexi));
-					
-					//les nouveaux lignes
-					for(int j =0;j< this.system.size();j++) {
-							 for(int k=0;k<this.system.get(j).size();k++) {
-								 if(j!= indexi) {
-									 this.system.get(j).set(k,(double) (this.system.get(j).get(k)-(lignePivot.get(k)*colomnPivot.get(j))));  
-									 }else {
-										 j++;
-										 }
-								 }	    
-					}
-					
-					showValues(indexi,indexj);
-					return this.system;
+		return this.system;
 	}
-	
+	//returner les variables qui sont du base avec le numéro du ligne comme key
 	public Map<Integer, String> showValues(int i,int j) throws PivotException, NonBornerException, Degenerescence {
-		System.out.println(this.varBase.toString());
 		String NomVarEntrant = getNameVarEntrant(j);
-		System.out.println("show values of base");
-		//this.varBase.put(i, NomVarEntrant);
 	        Iterator<Entry<Integer,String>> iterator = this.varBase.entrySet().iterator();
 	        while (iterator.hasNext()) {
 	        	Entry<Integer,String> entry = iterator.next();
@@ -420,28 +415,165 @@ public class Simplexe {
 	            	this.varBase.replace(i, NomVarEntrant);
 	            }
 	        }
-	        Iterator<Entry<Integer,String>> it = this.varBase.entrySet().iterator();
-	        while (it.hasNext()) {
-	        	Entry<Integer,String> entry = it.next();
-	            System.out.println("variable: "+entry.getValue()+" , value = "+this.system.get(entry.getKey()).get(this.system.get(0).size()-1));
-	        }
-	        System.out.println("Cout du Z ==>"+coutZ());
-
 	return this.varBase;
 	}
-	
+	//Le cout du Cj dans la phase 1
 	public Double coutZ() {
 		Double cout = (double)0;
 		 Iterator<Entry<Integer,String>> iterator = this.varBase.entrySet().iterator();
 	        while (iterator.hasNext()) {
 	        	Entry<Integer,String> entry = iterator.next();
 	            if(entry.getValue().startsWith("a")) {
+	            	System.out.println("la valeur du "+entry.getValue()+ " est "+this.system.get(entry.getKey()).get(this.system.get(0).size()-1));
 	            	cout += this.system.get(entry.getKey()).get(this.system.get(0).size()-1);
 	            }
 	        }
 	        this.system.get(this.system.size()-1).set(getMaxCol(), cout);
+	        System.out.println("le cout = "+cout);
 		return cout;
 	}
+	//Fonction qui retourn le tableau initiale du phase 1
+	public VBox realiserTable1() {
+		  VBox hb = new VBox();
+		  this.ajouterVarEcarArti();
+		  this.createTableView();
+		  hb.getChildren().add( this.createTableView());
+		  this.correctionZ();
+		  hb.getChildren().add( this.createTableView());
+		   hb.setPadding(new Insets(15, 12, 15, 12));
+		  return hb;
+	}
+
+	
+	/*               *
+	 *               * 
+	 *               *
+	 *    Phase 2    * 
+	 *               *
+	 *               *
+	 *               *
+	 *               */
+	
+	//suprimer les variables artificiel dans le system
+	public ArrayList<ArrayList<Double>>removeVarAr(){
+		int debut = getNbrColonne()+getNbrVarEc();
+		
+		for(int i=0;i<this.system.size();i++) {
+			for(int j = (this.system.get(i).size()-2);j >= debut ;j--) {		
+				this.system.get(i).remove(j);
+			}
+		}
+		System.out.println("---------------- Phase 2 --------");
+		displaySystem();	
+		return this.system;
+	}
+	//generer les noms des colonnes
+	public TableView<ObservableList<Double>> createTablePhase2() {
+		ArrayList<String> colName = generateNameColumnPhase2();
+		TableView<ObservableList<Double>> tableView = new TableView<>();
+		tableView.setItems(buildData(this.system));
+		
+		for (int i = 0; i < this.system.get(0).size(); i++) {
+			final int curCol = i;
+			final TableColumn<ObservableList<Double>, String> column = new TableColumn<>(colName.get(i));
+
+			column.setCellValueFactory(
+					new Callback<TableColumn.CellDataFeatures<ObservableList<Double>, String>, ObservableValue<String>>() {
+						@Override
+						public ObservableValue<String> call(CellDataFeatures<ObservableList<Double>, String> p) {
+							return new SimpleStringProperty(p.getValue().get(curCol).toString());
+						}
+					});
+			tableView.getColumns().add(column);
+		}
+		
+		tableView.setPrefHeight(getNbrLIgne() * 35);
+		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		return tableView;
+	}
+	//-********************************
+		private ArrayList<String> generateNameColumnPhase2() {
+			ArrayList<String> varEc = new ArrayList<String>();
+			ArrayList<String> varDec = new ArrayList<String>();
+			ArrayList<String> column = new ArrayList<String>();
+			for (int i = 0; i < this.cntrs.getCot().get(0).getNbrV(); i++) {
+				int c = i + 1;
+				varDec.add("x" + c);
+			}
+			for (int i = 0; i < getNbrLIgne() - 1; i++) {
+				int c = i + 1;
+				if (this.cntrs.getCot().get(i).getOp().equals("<=")) {
+					varEc.add("e" + c);
+				} else if (this.cntrs.getCot().get(i).getOp().equals(">=")) {
+
+					varEc.add("e" + c);
+				}
+			}
+			
+			column.addAll(varDec);
+			column.addAll(varEc);
+			column.add("b");
+			return column;
+		}
+
+	//la correction du fonction objectif Z
+	public ArrayList<ArrayList<Double>>corectionZ2(){
+		int eviter = this.getCntrs().getCot().get(0).getNbrV();
+		//nouvel fonction objectif 
+		ArrayList<Double>cj = new ArrayList<Double>();
+		//les index des fonctions qui contients des variables artificiel
+		ArrayList<Integer> indexs= new ArrayList<Integer>();
+		//Tout les variables Hors base sont a 0 sauf les variables artifiecl
+		for(int i=0;i<this.system.get(0).size();i++) {
+			if(i<=eviter)
+				cj.add(this.getCntrs().getAllV().get(getNbrLIgne()).get(i));
+			else
+				cj.add(new Double(0));
+		}
+		//colonne du B = 0
+		cj.set(cj.size()-1, coutZ2());
+		
+		//Trouver les contraints qui contients les variables entrante (x)
+		for(int i = 0;i<this.getCntrs().getCot().size()-1;i++) {
+			if(this.getCntrs().getCot().get(i).getOp().equals(">=") || this.getCntrs().getCot().get(i).getOp().equals("=")) {
+				indexs.add(i);
+			}
+		}
+		//Correction de CJ
+		for(int i=0;i<indexs.size();i++) {
+			for (int j = 0; j < this.system.get(indexs.get(i)).size()-1; j++) {
+				cj.set(j, cj.get(j)-this.system.get(indexs.get(i)).get(j));
+			}
+		}
+		
+		//supprimer la fonction Z et remplacer le avec Cj
+		this.system.remove(this.system.size()-1);
+		this.system.add(cj);
+		return this.system;
+	}
+	
+	//faire simplexe primal
+	public  ArrayList<ArrayList<Double>>phase2(){
+		
+		return this.system;
+	}
+	//cout de la fonction objectif dans la phase 2
+	public Double coutZ2() {
+		Double cout = (double)0;
+		 Iterator<Entry<Integer,String>> iterator = this.varBase.entrySet().iterator();
+	        while (iterator.hasNext()) {
+	        	Entry<Integer,String> entry = iterator.next();
+	            if(entry.getValue().startsWith("x")) {
+	            	System.out.println("la valeur du "+entry.getValue()+ " est "+this.system.get(entry.getKey()).get(this.system.get(0).size()-1));
+	            	cout += this.system.get(entry.getKey()).get(this.system.get(0).size()-1);
+	            }
+	        }
+	        this.system.get(this.system.size()-1).set(getMaxCol(), cout);
+	        System.out.println("le cout = "+cout);
+		return cout;
+	}
+	
+	
     
 	
 }

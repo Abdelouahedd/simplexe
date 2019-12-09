@@ -39,7 +39,7 @@ public class Contraints {
 		vb.setAlignment(Pos.BOTTOM_CENTER);
 		for (int i = 0; i < nbrC; i++) {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(10);
 				Contrainte co = new Contrainte(nbrV);
 				this.cont.add(co);
 				vb.getChildren().add(co.generateCont(nbrV));
