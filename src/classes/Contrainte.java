@@ -1,7 +1,6 @@
-package elements;
+package classes;
 
 import java.util.ArrayList;
-
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
@@ -36,8 +35,9 @@ public class Contrainte {
 		String operateurs[] = { "<=", ">=", "=" };
 		HBox hb = new HBox();
 		hb.setAlignment(Pos.BOTTOM_CENTER);
-		ComboBox<String> ope = new ComboBox<String>(FXCollections.observableArrayList(operateurs));
-
+		ChoiceBox<String> ope = new ChoiceBox<String>(FXCollections.observableArrayList(operateurs));
+ 		ope.getSelectionModel().select(0);
+        this.op = ope.getSelectionModel().toString();
 		for (int i = 1; i <= n; i++) {
 			TextField x = new TextField();
 			TextField b = new TextField();
@@ -65,6 +65,7 @@ public class Contrainte {
 		ope.getSelectionModel().selectedItemProperty()
 				.addListener(((ChangeListener<? super String>) (ov, old_val, new_val) -> {
 					this.op = new_val;
+					System.out.println("loperation selectionner = "+new_val);
 				}));
 
 		return hb;

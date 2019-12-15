@@ -1,7 +1,6 @@
-package models;
+package classes;
 
 import java.util.ArrayList;
-import elements.Contrainte;
 import javafx.geometry.Pos;
 import javafx.scene.layout.*;
 
@@ -18,13 +17,10 @@ public class Contraints {
 		this.b = new ArrayList<Double>();
 		this.z = new ArrayList<Double>();
 	}
-	
-	
-	
+
 	public ArrayList<Contrainte>getCot(){
 		return this.cont;
 	}
-	
 
 	public ArrayList<ArrayList<Double>> getCoeffcient() {
 		return coeffcient;
@@ -37,7 +33,9 @@ public class Contraints {
 	//les contraintes dans le stage avec la fonction objectif Z
 	public VBox generateConts(int nbrV,int nbrC) {
 		VBox vb = new VBox();
-		vb.setAlignment(Pos.BOTTOM_CENTER);
+		vb.setStyle("-fx-padding: 10;" + "-fx-border-style: solid inside;" + "-fx-border-width: 2;"
+				+ "-fx-border-insets: 5;" + "-fx-border-radius: 5;" + "-fx-border-color: orange;");
+		vb.setAlignment(Pos.CENTER);
 		for (int i = 0; i < nbrC; i++) {
 			try {
 				Thread.sleep(10);
@@ -45,7 +43,6 @@ public class Contraints {
 				this.cont.add(co);
 				vb.getChildren().add(co.generateCont(nbrV));
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

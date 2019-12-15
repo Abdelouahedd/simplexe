@@ -15,18 +15,23 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import models.Contraints;
 
 public class Simplexe {
+
 
 	private Contraints cntrs;
 	private ArrayList<ArrayList<Double>> system = new ArrayList<ArrayList<Double>>();
 	// Map contient les variables de base
 	private Map<Integer, String> varBase = new HashMap<Integer, String>();
-
+    //Le types du probleme Max | Min
+	private String type;
 	// Constructeur pour la création d'un object Simplexe
-	public Simplexe(Contraints cntrs) {
+	public Simplexe(Contraints cntrs,String type) {
 		this.cntrs = cntrs;
+		this.type = type;
+	}
+	public Simplexe(String type) {
+		this.type = type;
 	}
 
 	// initailiser Z
@@ -38,9 +43,15 @@ public class Simplexe {
 		}
 		return z;
 	}
+	public void setCntrs(Contraints cntrs) {
+		this.cntrs = cntrs;
+	}
+	public String getType(){
+		return this.type;
+	}
 
-	// Constructeur sans paramétre
-	public Simplexe() {
+	public Map<Integer, String> getVarBase() {
+		return varBase;
 	}
 
 	// la creation d'une matrice qui contient des valeurs d'ecarts et variable
@@ -102,7 +113,6 @@ public class Simplexe {
 					}
 				}
 				// ---------------------------------------------------
-
 				// si la contrainte contient =
 				if (this.cntrs.getCot().get(i).getOp().equals("=")) {
 					/********************/
@@ -158,12 +168,12 @@ public class Simplexe {
 	// -------------------------------------//
 
 	// le nombre du ligne du system
-	private int getNbrLIgne() {
+	public int getNbrLIgne() {
 		return this.cntrs.getCot().size();
 	}
 
 	// le nombre du colonne du system
-	private int getNbrColonne() {
+	public int getNbrColonne() {
 		return this.cntrs.getCot().get(1).getNbrV();
 	}
 
@@ -173,7 +183,7 @@ public class Simplexe {
 	}
 
 	// le nombre du colonne apres l'ajout des variables d'ecarts ou artificiels
-	private int getMaxColVar() {
+	public int getMaxColVar() {
 		return this.getNbrVarAr() + this.getNbrVarEc();
 	}
 
@@ -256,7 +266,7 @@ public class Simplexe {
 	}
 
 	// Fonction pour la géneration des noms des colonnes du tableau
-	private ArrayList<String> generateNameColumn() {
+	public ArrayList<String> generateNameColumn() {
 		ArrayList<String> varEc = new ArrayList<String>();
 		ArrayList<String> varAr = new ArrayList<String>();
 		ArrayList<String> varDec = new ArrayList<String>();
@@ -360,9 +370,9 @@ public class Simplexe {
 		// Tout les variables Hors base sont a 0 sauf les variables artifiecl
 		for (int i = 0; i < this.system.get(0).size(); i++) {
 			if (i >= eviter)
-				cj.add(new Double(1));
+				cj.add((double)1);
 			else
-				cj.add(new Double(0));
+				cj.add((double) 0);
 		}
 		// colonne du B = 0
 		cj.set(cj.size() - 1, coutZ());
@@ -495,7 +505,13 @@ public class Simplexe {
 		// Tout les variables Hors base sont 0 sauf les variables de decisions
 		for (int i = 0; i < this.system.get(0).size(); i++) {
 			if (i < eviter) {
-				cj.add(-1 * fonctionObjectif().get(i));
+				//Si le probleme est du max on lui transferer au MIN
+				if(this.getType().equals("MAX")){
+					cj.add(-1 * fonctionObjectif().get(i));
+				}else{
+					cj.add(fonctionObjectif().get(i));
+				}
+
 			} else {
 				cj.add(new Double(0));
 			}
@@ -540,7 +556,6 @@ public class Simplexe {
 			if (this.cntrs.getCot().get(i).getOp().equals("<=")) {
 				varEc.add("e" + c);
 			} else if (this.cntrs.getCot().get(i).getOp().equals(">=")) {
-
 				varEc.add("e" + c);
 			}
 		}
@@ -590,6 +605,7 @@ public class Simplexe {
 
 	// faire iteration dans la phase 2
 	public ArrayList<ArrayList<Double>> iterationPhase2() throws PivotException, NonBornerException, Degenerescence {
+		this.displaySystem();
 		coutZ2();
 		int indexi = findLignePivot();
 		int indexj = findColonePivot();
@@ -619,7 +635,6 @@ public class Simplexe {
 			}
 		}
 		displaySystem();
-		
 		return this.system;
 	}
 
